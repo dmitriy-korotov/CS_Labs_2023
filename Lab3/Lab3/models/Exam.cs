@@ -62,9 +62,7 @@ namespace Models
 
         public int CompareTo(object obj)
         {
-            if (obj == null) return 1;
-
-            Exam ex = obj as Exam;
+            Exam ex = obj as Exam ?? throw new ArgumentException("Object is null");
             if (ex != null)
                 return Subject.CompareTo(ex.Subject);
             else

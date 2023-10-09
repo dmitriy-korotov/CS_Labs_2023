@@ -8,8 +8,35 @@ namespace Models
 {
     class StudentCollection<TKey>
     {
-        Dictionary<TKey, Student> m_students = new();
-        KeySelector<TKey> m_key_selector;
+        private readonly Dictionary<TKey, Student> m_students = new();
+        private KeySelector<TKey> m_key_selector;
+
+
+        public double MaxAverageMark
+        {
+            get
+            {
+                if (m_students.Count == 0)
+                    return 0;
+
+                double max = m_students.Max((student) =>
+                {
+                    return student.Value.Exams.Average((exam) => exam.Mark);
+                });
+                return max;
+            }
+        }
+
+
+
+        public IEnumerable<IGrouping<Education, KeyValuePair<TKey, Student>>> GroupByEducation
+        {
+            get
+            {
+                return m_students.GroupBy((student) => student.Value.EducationType);
+            }
+        }
+
 
 
         public StudentCollection(KeySelector<TKey> _selector)
@@ -35,6 +62,13 @@ namespace Models
                 m_students.Add(m_key_selector(student), student);
             }
         }
+
+
+        public IEnumerable<KeyValuePair<TKey, Student>> EducationForm(Education _value)
+        {
+            return m_students.Where((student) => student.Value.EducationType == _value);
+        }
+
 
 
         public override string ToString()
