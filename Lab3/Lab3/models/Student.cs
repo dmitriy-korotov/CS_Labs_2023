@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Models
 {
-    internal class Student : Person, System.Collections.IEnumerable
+    internal class Student : Person, IEnumerable, System.ComponentModel.INotifyPropertyChanged
     {
         private Education m_education_type = new();
         private int m_number_of_group = new();
@@ -13,11 +14,14 @@ namespace Models
         private List<Exam> m_exams = new();
 
 
-
         public Education EducationType
         {
             get => m_education_type;
-            set => m_education_type = value;
+            set
+            {
+                m_education_type = value;
+                NotifyPropertyChanged("m_education_type");
+            }
         }
 
 
@@ -43,6 +47,7 @@ namespace Models
                     throw new Exception("Invalid number of group value (need 100 < value < 600)");
                 }
                 m_number_of_group = value;
+                NotifyPropertyChanged("m_number_of_group");
             }
         }
 
@@ -219,5 +224,15 @@ namespace Models
 
 
         public void sortExamsByDate() => m_exams.Sort(new ExamComparer());
+
+
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+
+        private void NotifyPropertyChanged(string _field_name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(_field_name));
+        }
     }
 }

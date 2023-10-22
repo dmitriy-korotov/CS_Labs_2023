@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.IsolatedStorage;
 using System.Linq;
+using Lab3.models;
 using Models;
 
 namespace Lab3
@@ -86,237 +88,76 @@ namespace Lab3
         public static void Main(String[] _args)
         {
             writeWithColor("\n\t\tTASK 1\n");
-            
-            Student student = new Student();
-            student.addExams(new Exam("Math", 4, new DateTime(2004, 2, 4)), new Exam("History", 3, new DateTime(2005, 2, 5)),
-                             new Exam("Russian", 5, new DateTime(1999, 4, 4)), new Exam("Physic", 2, new DateTime(2010, 6, 4)),
-                             new Exam("Subject", 1, new DateTime(2023, 2, 10)), new Exam("Subject2", 5, new DateTime(2014, 12, 14)));
 
-            writeWithColor($"Student:\n\n");
-            Console.WriteLine(student);
-            student.sortExamsBySubjectName();
-            writeWithColor($"Student after sorting by subject name:\n\n");
-            Console.WriteLine(student);
-            student.sortExamsByMark();
-            writeWithColor($"Student after sorting by exams mark:\n\n");
-            Console.WriteLine(student);
-            student.sortExamsByDate();
-            writeWithColor($"Student after sorting by date:\n\n");
-            Console.WriteLine(student);
+            Dictionary<Student, String> students = new Dictionary<Student, String>();
+
+            StudentCollection<string> student_cllection_1 = new StudentCollection<string>("Student collection 1", student =>
+            {
+                if (students.ContainsKey(student))
+                    return students.GetValueOrDefault(student, "key");
+
+                string key = RandomString(10);
+                students.Add(student, key);
+                return key;
+            });
+            Console.WriteLine(student_cllection_1);
+
+            StudentCollection<string> student_cllection_2 = new StudentCollection<string>("Student collection 2", student =>
+            {
+                if (students.ContainsKey(student))
+                    return students.GetValueOrDefault(student, "key");
+
+                string key = RandomString(10);
+                students.Add(student, key);
+                return key;
+            });
+            Console.WriteLine(student_cllection_2);
 
 
 
             writeWithColor("\n\t\tTASK 2\n");
-            StudentCollection<string> studen_collection = new StudentCollection<string>(student => RandomString(student.Surame.Length));
-            studen_collection.AddStudents(RandomStudents(5));
-            Console.WriteLine(studen_collection);
+            Journal journal = new Journal();
+            student_cllection_1.StudentsChanged += journal.StudentChangedHandler;
+            student_cllection_2.StudentsChanged += journal.StudentChangedHandler;
 
 
 
             writeWithColor("\n\t\tTASK 3\n");
-            writeWithColor($"MaxAverageMark = {studen_collection.MaxAverageMark}\n");
-            writeWithColor($"EducationForm:\n");
-            foreach (var stud in studen_collection.EducationForm(Education.Specialist))
+
+            for (int i = 0; i < Random.Shared.NextInt64(5, 10); i++)
             {
-                Console.WriteLine(stud.Value);
+                student_cllection_1.AddStudents(RandomStudents(3));
             }
-            writeWithColor($"GroupByEducation:\n");
-            foreach (var group in studen_collection.GroupByEducation)
+            for (int i = 0; i < Random.Shared.NextInt64(5, 10); i++)
             {
-                foreach (var stud in group)
+                student_cllection_2.AddStudents(RandomStudents(3));
+            }
+
+            for (int i = 0; i < Random.Shared.Next(5, 15); i++)
+            {
+                foreach (var student in student_cllection_1.EducationForm(Education.Bachelor))
                 {
-                    Console.WriteLine(stud.Value);
+                    student.Value.NumberOfGroup = Random.Shared.Next(101, 599);
+                    student.Value.EducationType = RandomEducation();
                 }
+            }
+
+            for (int i = 0; i < Random.Shared.Next(1, students.Count); i++)
+            {
+                var pair = students.ElementAt(Random.Shared.Next(0, students.Count - 1));
+
+                student_cllection_1.Remove(pair.Key);
+                student_cllection_2.Remove(pair.Key);
+
+                pair.Key.EducationType = RandomEducation();
             }
 
 
 
             writeWithColor("\n\t\tTASK 4\n");
 
-
-            int count = 0;
-
-            Console.WriteLine("Input elements count:\t");
-            string line = Console.ReadLine();
-            if (line != null)
-            {
-                Int32.TryParse(line, out count);
-            }
-
-            while (count < 1)
-            {
-                Console.WriteLine("Input correct value elements count:\t");
-                line = Console.ReadLine();
-                if (line != null)
-                {
-                    Int32.TryParse(line, out count);
-                }
-            }
-
-            Dictionary<int, KeyValuePair<Person, Student>> dict1 = new();
-            Dictionary<int, Person> dict2 = new();
-            Dictionary<int, KeyValuePair<string, Student>> dict3 = new();
-            Dictionary<int, string> dict4 = new();
-
-            GenerateElement<Person, Student> generator = index => {
-                    var pair = new KeyValuePair<Person, Student>(RandomPerson(), RandomStudent());
-                    dict1.Add(index, pair);
-                    dict2.Add(index, pair.Key);
-                    return pair;
-                };
-            TestCollections<Person, Student> test_collections = new TestCollections<Person, Student>(count, generator);
-
-            test_collections.fillStringsList(count, index => {
-                    string str = RandomString(10);
-                    dict4.Add(index, str);
-                    return str;
-            });
-            test_collections.fillDictWithKeyString(count, index => {
-                    var pair = new KeyValuePair<string, Student>(RandomString(10), RandomStudent());
-                    dict3.Add(index, pair);
-                    return pair;
-            });
-            foreach (var el in test_collections.ListKeys)
-            {
-                Console.WriteLine(el);
-            }
-            Console.WriteLine("\n\n");
-            foreach (var el in test_collections.Dict1)
-            {
-                Console.WriteLine(el.Key);
-                Console.WriteLine(el.Value);
-            }
-            Console.WriteLine("\n\n");
-            foreach (var el in test_collections.Dict2)
-            {
-                Console.WriteLine(el.Key);
-                Console.WriteLine(el.Value);
-            }
-            Console.WriteLine("\n\n");
-            foreach (var el in test_collections.ListStrings)
-            {
-                Console.WriteLine(el);
-            }
-
-
-
-            writeWithColor("\n\nTKey && Tvalue\n\n");
-
-            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
-
-            timer.Start();
-            test_collections.FindInDict1(dict1.ElementAt(0).Value.Key);
-            timer.Stop();
-            writeWithColor($"Find first: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInDict1(dict1.ElementAt(dict1.Count / 2).Value.Key);
-            timer.Stop();
-            writeWithColor($"Find middle: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInDict1(dict1.ElementAt(dict1.Count - 1).Value.Key);
-            timer.Stop();
-            writeWithColor($"Find last: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInDict1(RandomPerson());
-            writeWithColor($"Find not existed: {timer.Elapsed}");
-            timer.Stop();
-            timer.Reset();
-
-
-
-            writeWithColor("\n\nTKey\n\n");
-
-
-
-            timer.Start();
-            test_collections.FindInKeysList(dict2.ElementAt(0).Value);
-            timer.Stop();
-            writeWithColor($"Find first: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInKeysList(dict2.ElementAt(dict2.Count / 2).Value);
-            timer.Stop();
-            writeWithColor($"Find middle: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInKeysList(dict2.ElementAt(dict2.Count - 1).Value);
-            timer.Stop();
-            writeWithColor($"Find last: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInKeysList(RandomPerson());
-            writeWithColor($"Find not existed: {timer.Elapsed}");
-            timer.Stop();
-            timer.Reset();
-
-
-
-            writeWithColor("\n\nstring && Student\n\n");
-
-
-
-            timer.Start();
-            test_collections.FindInDict2(dict3.ElementAt(0).Value.Key);
-            timer.Stop();
-            writeWithColor($"Find first: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInDict2(dict3.ElementAt(dict3.Count / 2).Value.Key);
-            timer.Stop();
-            writeWithColor($"Find middle: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInDict2(dict3.ElementAt(dict3.Count - 1).Value.Key);
-            timer.Stop();
-            writeWithColor($"Find last: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInDict2(RandomString(15));
-            writeWithColor($"Find not existed: {timer.Elapsed}");
-            timer.Stop();
-            timer.Reset();
-
-
-
-            writeWithColor("\n\nstring\n\n");
-
-
-
-            timer.Start();
-            test_collections.FindInStringsList(dict4.ElementAt(0).Value);
-            timer.Stop();
-            writeWithColor($"Find first: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInStringsList(dict4.ElementAt(dict4.Count / 2).Value);
-            timer.Stop();
-            writeWithColor($"Find middle: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInStringsList(dict4.ElementAt(dict4.Count - 1).Value);
-            timer.Stop();
-            writeWithColor($"Find last: {timer.Elapsed}");
-            timer.Reset();
-
-            timer.Start();
-            test_collections.FindInStringsList(RandomString(15));
-            writeWithColor($"Find not existed: {timer.Elapsed}");
-            timer.Stop();
-            timer.Reset();
+            writeWithColor($"Journal:\n\n");
+            Console.WriteLine(journal);
         }
     }
 }
