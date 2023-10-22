@@ -215,7 +215,7 @@ namespace Models
         public void sortExamsBySubjectName() => m_exams.Sort();
 
 
-        public void sortExamsByMark() => m_exams.Sort();
+        public void sortExamsByMark() => m_exams.Sort(new Exam());
 
 
         public void sortExamsByDate() => m_exams.Sort(new ExamComparer());
