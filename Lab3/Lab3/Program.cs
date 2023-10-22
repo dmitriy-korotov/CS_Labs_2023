@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.IsolatedStorage;
-using System.Linq;
-using Lab3.models;
+﻿using Lab3.models;
 using Models;
 
 namespace Lab3
@@ -57,7 +53,7 @@ namespace Lab3
 
         private static Student RandomStudent()
         {
-            return new Student(RandomPerson(), RandomEducation(), random.Next(100));
+            return new Student(RandomPerson(), RandomEducation(), random.Next(101, 599));
         }
 
 
@@ -89,75 +85,68 @@ namespace Lab3
         {
             writeWithColor("\n\t\tTASK 1\n");
 
-            Dictionary<Student, String> students = new Dictionary<Student, String>();
-
-            StudentCollection<string> student_cllection_1 = new StudentCollection<string>("Student collection 1", student =>
+            Student student = RandomStudent();
+            Student? student_cpy = null;
+            try
             {
-                if (students.ContainsKey(student))
-                    return students.GetValueOrDefault(student, "key");
-
-                string key = RandomString(10);
-                students.Add(student, key);
-                return key;
-            });
-            Console.WriteLine(student_cllection_1);
-
-            StudentCollection<string> student_cllection_2 = new StudentCollection<string>("Student collection 2", student =>
+                student_cpy = student.SerializeDeepCopy();
+            }
+            catch (Exception ex)
             {
-                if (students.ContainsKey(student))
-                    return students.GetValueOrDefault(student, "key");
-
-                string key = RandomString(10);
-                students.Add(student, key);
-                return key;
-            });
-            Console.WriteLine(student_cllection_2);
+                Console.WriteLine(ex.InnerException);
+            }
+            if (student_cpy == null)
+            {
+                Console.WriteLine("Student copy is null");
+                return;
+            }
+            Console.WriteLine($"Student:\n\n{student}");
+            Console.WriteLine($"\n\nStudent copy:\n\n{student_cpy}");
 
 
 
             writeWithColor("\n\t\tTASK 2\n");
-            Journal journal = new Journal();
-            student_cllection_1.StudentsChanged += journal.StudentChangedHandler;
-            student_cllection_2.StudentsChanged += journal.StudentChangedHandler;
+
+            Console.WriteLine("Input filename:\t");
+            string filepath = Console.ReadLine() ?? "Models.txt";
+            if (File.Exists(filepath))
+            {
+                student.Load(filepath);
+            }
+            else
+            {
+                File.Create(filepath);
+                Console.WriteLine($"File '{filepath}' is not exists, he was created.");
+            }
 
 
 
             writeWithColor("\n\t\tTASK 3\n");
-
-            for (int i = 0; i < Random.Shared.NextInt64(5, 10); i++)
-            {
-                student_cllection_1.AddStudents(RandomStudents(3));
-            }
-            for (int i = 0; i < Random.Shared.NextInt64(5, 10); i++)
-            {
-                student_cllection_2.AddStudents(RandomStudents(3));
-            }
-
-            for (int i = 0; i < Random.Shared.Next(5, 15); i++)
-            {
-                foreach (var student in student_cllection_1.EducationForm(Education.Bachelor))
-                {
-                    student.Value.NumberOfGroup = Random.Shared.Next(101, 599);
-                    student.Value.EducationType = RandomEducation();
-                }
-            }
-
-            for (int i = 0; i < Random.Shared.Next(1, students.Count); i++)
-            {
-                var pair = students.ElementAt(Random.Shared.Next(0, students.Count - 1));
-
-                student_cllection_1.Remove(pair.Key);
-                student_cllection_2.Remove(pair.Key);
-
-                pair.Key.EducationType = RandomEducation();
-            }
+            Console.WriteLine(student);
 
 
 
             writeWithColor("\n\t\tTASK 4\n");
+            student.AddFromConsole();
+            student.Save(filepath);
+            Console.WriteLine(student);
 
-            writeWithColor($"Journal:\n\n");
-            Console.WriteLine(journal);
+
+
+            writeWithColor("\n\t\tTASK 5\n");
+            Student.Load(filepath, out student);
+            if (student == null)
+            {
+                Console.WriteLine("Student after loading from file is null");
+                return;
+            }
+            student.AddFromConsole();
+            Student.Save(filepath, student);
+
+
+
+            writeWithColor("\n\t\tTASK 6\n");
+            Console.WriteLine(student);
         }
     }
 }

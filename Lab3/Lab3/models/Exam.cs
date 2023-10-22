@@ -4,7 +4,7 @@ using Interfaces;
 
 namespace Models
 {
-    internal class Exam : IDateAndCopy, IComparable, IComparer<Exam>
+    public class Exam : IDateAndCopy, IComparable, IComparer<Exam>
     {
         private string m_subject;
         private int m_mark;
@@ -57,6 +57,48 @@ namespace Models
         {
             Exam copy = new Exam(m_subject, m_mark, m_starting_date);
             return copy;
+        }
+
+
+        public void AddFromConsole()
+        {
+            Console.WriteLine("Input subject:\t");
+            m_subject = Console.ReadLine() ?? "";
+
+            Console.WriteLine("Input mark (from 1 to 5):\t");
+            while (true)
+            {
+                try
+                {
+                    m_mark = Int32.Parse(Console.ReadLine() ?? "5");
+                    if (m_mark < 1 || m_mark > 5)
+                    {
+                        Console.WriteLine("Input correct mark (from 1 to 5):\t");
+                        continue;
+                    }
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Input correct mark (from 1 to 5):\t");
+                }
+            }
+
+
+
+            Console.WriteLine("Input exam starting date:\t");
+            while (true)
+            {
+                try
+                {
+                    m_starting_date = DateTime.Parse(Console.ReadLine() ?? "24.10.2023");
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Please, input correct exam starting date:\t");
+                }
+            }
         }
 
 

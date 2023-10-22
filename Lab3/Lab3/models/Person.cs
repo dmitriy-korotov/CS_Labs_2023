@@ -3,7 +3,7 @@ using Interfaces;
 
 namespace Models
 {
-    internal class Person : IDateAndCopy
+    public class Person : IDateAndCopy
     {
         protected string m_name;
         protected string m_surname;
@@ -87,6 +87,29 @@ namespace Models
                 return false;
             }
             return obj.ToString() == ToString();
+        }
+
+
+        public void AddFromConsole()
+        {
+            Console.WriteLine("Input name:\t");
+            m_name = Console.ReadLine() ?? "";
+            Console.WriteLine("Input surname:\t");
+            m_surname = Console.ReadLine() ?? "";
+
+            Console.WriteLine("Input birthday date:\t");
+            while (true)
+            {
+                try
+                {
+                    m_birthday_date = DateTime.Parse(Console.ReadLine() ?? "24.10.2023");
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Please input correct dirthday date:\t");
+                }
+            }
         }
 
 

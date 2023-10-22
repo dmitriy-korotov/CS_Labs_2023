@@ -3,10 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Unicode;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace Models
 {
-    internal class Student : Person, IEnumerable, System.ComponentModel.INotifyPropertyChanged
+    public class Student : Person, INotifyPropertyChanged
     {
         private Education m_education_type = new();
         private int m_number_of_group = new();
@@ -176,6 +182,214 @@ namespace Models
             copy.addExams(m_exams.ToArray());
             copy.addTests(m_tests.ToArray());
             return copy;
+        }
+
+
+        public Student? SerializeDeepCopy()
+        {
+            using (var ms = new MemoryStream())
+            {
+                XmlSerializer serializer = new XmlSerializer(this.GetType());
+                serializer.Serialize(ms, this);
+                ms.Seek(0, SeekOrigin.Begin);
+                return serializer.Deserialize(ms) as Student;
+            }
+        }
+
+
+        public bool Save(string _filename)
+        {
+            TextWriter? writer = null;
+            try
+            {
+                var serializer = new XmlSerializer(this.GetType());
+                writer = new StreamWriter(_filename, false);
+                serializer.Serialize(writer, this);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                if (writer != null)
+                    writer.Close();
+            }
+
+            if (writer != null)
+                writer.Close();
+            else
+                return false;
+
+            return true;
+        }
+
+
+        public static bool Save(string _filename, Student _student, bool _append = false)
+        {
+            TextWriter? writer = null;
+            try
+            {
+                var serializer = new XmlSerializer(_student.GetType());
+                writer = new StreamWriter(_filename, _append);
+                serializer.Serialize(writer, _student);
+                return true;
+            }
+            finally
+            {
+                if (writer != null)
+                    writer.Close();
+            }
+        }
+
+
+        public bool Load(string _filename)
+        {
+            TextReader? reader = null;
+            try
+            {
+                var serializer = new XmlSerializer(this.GetType());
+                reader = new StreamReader(_filename);
+                Student? student = serializer.Deserialize(reader) as Student;
+                if (student == null)
+                    return false;
+
+                this.Person = student.Person;
+                this.m_education_type = student.m_education_type;
+                this.m_exams = student.m_exams;
+                this.m_tests = student.m_tests;
+                this.m_number_of_group = student.m_number_of_group;
+            }
+            finally
+            {
+                if (reader != null)
+                    reader.Close();
+            }
+
+            if (reader != null)
+                reader.Close();
+            else
+                return false;
+
+            return true;
+        }
+
+
+        public static bool Load(string _filename, out Student? _student)
+        {
+            TextReader? reader = null;
+            try
+            {
+                var serializer = new XmlSerializer(typeof(Student));
+                reader = new StreamReader(_filename);
+                if (serializer.Deserialize(reader) as Student == null)
+                {
+                    _student = null;
+                    return false;
+                }
+                _student = serializer.Deserialize(reader) as Student;
+                return true;
+            }
+            finally
+            {
+                if (reader != null)
+                    reader.Close();
+            }
+        }
+
+
+
+        public new bool AddFromConsole()
+        {
+            Person.AddFromConsole();
+
+
+
+            Console.WriteLine("Input education type (B or S or SE)");
+            while (true)
+            {
+                string type = Console.ReadLine() ?? "";
+                if (type == "B")
+                {
+                    m_education_type = Education.Bachelor;
+                    break;
+                }
+                if (type == "S")
+                {
+                    m_education_type = Education.Specialist;
+                    break;
+                }
+                if (type == "SE")
+                {
+                    m_education_type = Education.SecondEducation;
+                    break;
+                }
+                Console.WriteLine("Please input correct education type (B or S or SE)");
+            }
+
+
+
+            Console.WriteLine("Input number of group:\t");
+            while (true)
+            {
+                try
+                {
+                    NumberOfGroup = Int32.Parse(Console.ReadLine() ?? "0");
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Please input correct number of group:\t");
+                }
+            }
+
+
+
+            Console.WriteLine("Input exams count:\t");
+            int exams_count = 0;
+            while (true)
+            {
+                try
+                {
+                    exams_count = Int32.Parse(Console.ReadLine() ?? "0");
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Please input correct exams count:\t");
+                }
+            }
+            for (int i = 0; i < exams_count; i++)
+            {
+                var exam = new Exam();
+                exam.AddFromConsole();
+                m_exams.Add(exam);
+            }
+
+
+
+            Console.WriteLine("Input tests count:\t");
+            int tests_count = 0;
+            while (true)
+            {
+                try
+                {
+                    tests_count = Int32.Parse(Console.ReadLine() ?? "0");
+                    break;
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Please input correct tests count:\t");
+                }
+            }
+            for (int i = 0; i < tests_count; i++)
+            {
+                var test = new Test();
+                test.AddFromConsole();
+                m_tests.Add(test);
+            }
+
+            return true;
         }
 
 

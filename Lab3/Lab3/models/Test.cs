@@ -1,6 +1,8 @@
-﻿namespace Models
+﻿using System.Xml.Linq;
+
+namespace Models
 {
-    internal class Test
+    public class Test
     {
         private string m_subject_name;
         private bool m_is_passed_test;
@@ -29,6 +31,30 @@
 
         public Test(): this("Math", true)
         { }
+
+
+        public void AddFromConsole()
+        {
+            Console.WriteLine("Input subject name:\t");
+            m_subject_name = Console.ReadLine() ?? "";
+
+            Console.WriteLine("Is passed test (YES or NO):\t");
+            while(true)
+            {
+                string passed_str = Console.ReadLine() ?? "";
+                if (passed_str == "YES")
+                {
+                    m_is_passed_test = true;
+                    break;
+                }
+                if (passed_str == "NO")
+                {
+                    m_is_passed_test = false;
+                    break;
+                }
+                Console.WriteLine("Please input correct data (YES or NO):\t");
+            }
+        }
 
 
         public override string ToString()
