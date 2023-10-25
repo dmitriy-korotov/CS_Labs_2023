@@ -1,2 +1,2 @@
-# CS_Labs_2023
+# CS Labs 2023
 C# Labs 2023
